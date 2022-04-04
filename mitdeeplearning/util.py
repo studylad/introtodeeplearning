@@ -67,9 +67,10 @@ class PeriodicPlotter:
       elif self.scale == 'loglog':
         plt.loglog(data)
       else:
-        raise ValueError("unrecognized parameter scale {}".format(self.scale))
+        raise ValueError(f"unrecognized parameter scale {self.scale}")
 
-      plt.xlabel(self.xlabel); plt.ylabel(self.ylabel)
+      plt.xlabel(self.xlabel)
+      plt.ylabel(self.ylabel)
       ipythondisplay.clear_output(wait=True)
       ipythondisplay.display(plt.gcf())
 
