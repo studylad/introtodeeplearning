@@ -8,12 +8,14 @@ import cv2
 def play_video(filename, width=None):
     encoded = base64.b64encode(io.open(filename, 'r+b').read())
     video_width = 'width="' + str(width) + '"' if width is not None else ''
-    embedded = HTML(data='''
+    return HTML(
+        data='''
         <video controls {0}>
             <source src="data:video/mp4;base64,{1}" type="video/mp4" />
-        </video>'''.format(video_width, encoded.decode('ascii')))
-
-    return embedded
+        </video>'''.format(
+            video_width, encoded.decode('ascii')
+        )
+    )
 
 
 def preprocess_pong(image):
@@ -30,9 +32,8 @@ def preprocess_pong(image):
 def pong_change(prev, curr):
     prev = preprocess_pong(prev)
     curr = preprocess_pong(curr)
-    I = prev - curr
     # I = (I - I.min()) / (I.max() - I.min() + 1e-10)
-    return I
+    return prev - curr
 
 
 class Memory:
@@ -68,13 +69,13 @@ def parallelized_collect_rollout(batch_size, envs, model, choose_action):
 
     memories = [Memory() for _ in range(batch_size)]
     next_observations = [single_env.reset() for single_env in envs]
-    previous_frames = [obs for obs in next_observations]
+    previous_frames = list(next_observations)
     done = [False] * batch_size
     rewards = [0] * batch_size
 
     while True:
 
-        current_frames = [obs for obs in next_observations]
+        current_frames = list(next_observations)
         diff_frames = [pong_change(prev, curr) for (prev, curr) in zip(previous_frames, current_frames)]
 
         diff_frames_not_done = [diff_frames[b] for b in range(batch_size) if not done[b]]
@@ -133,7 +134,7 @@ def save_video_of_model(model, env_name, suffix=""):
         counter += 1
 
     output_video.close()
-    print("Successfully saved {} frames into {}!".format(counter, filename))
+    print(f"Successfully saved {counter} frames into {filename}!")
     return filename
 
 
